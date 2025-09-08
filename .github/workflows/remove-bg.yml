@@ -10,39 +10,16 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          persist-credentials: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.10"   # safer than 3.13 (rembg models fully support <=3.11)
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pillow rembg onnxruntime requests
-
-      - name: Ensure model exists
-        run: |
-          mkdir -p models
-          MODEL_PATH="models/u2net.onnx"
-          if [ ! -f "$MODEL_PATH" ]; then
-            echo "⚡ Model not found, downloading..."
-            curl -L "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx" -o $MODEL_PATH
-          else
-            echo "✅ Model already exists in repo."
-          fi
-
-      - name: Commit model to repo if missing
-        run: |
-          if [ -n "$(git status --porcelain models)" ]; then
-            git config --global user.name "github-actions[bot]"
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git add models
-            git commit -m "Add downloaded model"
-            git push
-          fi
+          pip install pillow rembg onnxruntime
 
       - name: Create output folder
         run: mkdir -p output
@@ -62,9 +39,9 @@ jobs:
               if file_name.lower().endswith((".png", ".jpg", ".jpeg")):
                   input_path = os.path.join(input_dir, file_name)
                   output_path = os.path.join(output_dir, os.path.splitext(file_name)[0] + ".png")
-
+                  
                   img = Image.open(input_path)
-                  out = remove(img, session=None, model_name="u2net")  # will use models/u2net.onnx
+                  out = remove(img)
                   out.save(output_path)
                   print(f"✅ Processed: {file_name}")
           EOF
