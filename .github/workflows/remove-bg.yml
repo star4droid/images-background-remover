@@ -1,0 +1,53 @@
+name: Remove Backgrounds
+
+on:
+  workflow_dispatch:   # Run only manually
+
+jobs:
+  remove-bg:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pillow rembg
+
+      - name: Create output folder
+        run: mkdir -p output
+
+      - name: Remove backgrounds from images
+        run: |
+          python <<EOF
+          import os
+          from rembg import remove
+          from PIL import Image
+
+          input_dir = "images"
+          output_dir = "output"
+          os.makedirs(output_dir, exist_ok=True)
+
+          for file_name in os.listdir(input_dir):
+              if file_name.lower().endswith((".png", ".jpg", ".jpeg")):
+                  input_path = os.path.join(input_dir, file_name)
+                  output_path = os.path.join(output_dir, os.path.splitext(file_name)[0] + ".png")
+                  
+                  img = Image.open(input_path)
+                  out = remove(img)
+                  out.save(output_path)
+                  print(f"✅ Processed: {file_name}")
+          EOF
+
+      - name: Upload processed images
+        uses: actions/upload-artifact@v4
+        with:
+          name: processed-images
+          path: output/
