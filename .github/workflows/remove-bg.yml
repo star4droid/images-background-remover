@@ -29,7 +29,7 @@ jobs:
           MODEL_PATH="models/u2net.onnx"
           if [ ! -f "$MODEL_PATH" ]; then
             echo "⚡ Model not found, downloading..."
-            curl -L "<YOUR_MODEL_URL>" -o $MODEL_PATH
+            curl -L "https://github.com/danielgatis/rembg/releases/download/v0.0.0/u2net.onnx" -o $MODEL_PATH
           else
             echo "✅ Model already exists in repo."
           fi
